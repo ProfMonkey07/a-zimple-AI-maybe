@@ -1,0 +1,153 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class neuralnetwork : MonoBehaviour
+{
+    public float speed;
+    public float movespeed;
+    private float disttoright;
+    private float disttoleft;
+    private float goleft;
+    private float goright;
+    public float[] weights;
+    public GameObject cube2;
+    private float distonz;
+    private float speed2;
+    public float ypos;
+    public Vector4[] propogates;
+    public int propnum;
+    private int propnum2;
+    // Start is called before the first frame update
+    void Start()
+    {
+        propnum = 0;
+        propnum2 = 0;
+        ypos = transform.position.y;
+        speed2 = speed;
+        weights[0] = Random.Range(-100, 100);
+        weights[1] = Random.Range(-100, 100);
+        weights[2] = Random.Range(-100, 100);
+        weights[3] = Random.Range(-100, 100);
+        weights[0] = weights[0] / 100;
+        weights[1] = weights[1] / 100;
+        weights[2] = weights[2] / 100;
+        weights[3] = weights[3] / 100;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        for(int i = 0; i < propogates.Length;)
+        {
+             if(propogates[propnum2].w == Mathf.FloorToInt(weights[0]))
+            {
+                if (propogates[propnum2].x == Mathf.FloorToInt(weights[1]))
+                {
+                    if (propogates[propnum2].y == Mathf.FloorToInt(weights[2]))
+                    {
+                        if (propogates[propnum2].z == Mathf.FloorToInt(weights[3]))
+                        {
+                            weights[0] += (Random.Range(-100, 101) / 100);
+                            weights[1] += (Random.Range(-100, 101) / 100);
+                            weights[2] += (Random.Range(-100, 101) / 100);
+                            weights[3] += (Random.Range(-100, 101) / 100);
+                        }
+                    }
+                }
+            }
+            propnum2 += 1;
+            i += 1;
+        }
+        propnum2 = 0;
+        distonz = transform.position.z;
+        speed2 = speed;
+        transform.position = new Vector3(transform.position.x, ypos, transform.position.z + 1 * speed2);
+        RaycastHit hit;
+        RaycastHit hit2;
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.left), out hit, Mathf.Infinity))
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.left) * hit.distance, Color.yellow);
+            Debug.Log("Did Hit");
+        }
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.right), out hit2, Mathf.Infinity))
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.right) * hit2.distance, Color.yellow);
+            Debug.Log("Did Hit");
+        }
+        disttoleft = hit.distance;
+        disttoright = hit2.distance;
+        goright = disttoright * weights[0] + disttoleft * weights[1];
+        goleft = disttoright * weights[2] + disttoleft * weights[3];
+        if(goright > goleft)
+        {
+            transform.position = new Vector3(transform.position.x + 1 * movespeed, ypos, transform.position.z + 1 * speed2);
+        }
+        else if(goleft > goright)
+        {
+            transform.position = new Vector3(transform.position.x - 1 * movespeed, ypos, transform.position.z + 1 * speed2);
+        }
+        else
+        {
+            transform.position = new Vector3(transform.position.x, ypos, transform.position.z + 1 * speed2);
+        }
+        if (distonz < (cube2.GetComponent<neuralnetwork>().distonz - 1))
+        {
+            cube2.GetComponent<neuralnetwork>().weights = weights;
+            transform.position = new Vector3(0, ypos, 0);
+            cube2.transform.position = new Vector3(0, cube2.GetComponent<neuralnetwork>().ypos, 0);
+            weights[0] += (Random.Range(-100, 101) / 100);
+            weights[1] += (Random.Range(-100, 101) / 100);
+            weights[2] += (Random.Range(-100, 101) / 100);
+            weights[3] += (Random.Range(-100, 101) / 100);
+        }
+        else if (distonz > cube2.GetComponent<neuralnetwork>().distonz + 1)
+        {
+            weights[0] += (Random.Range(-100, 101) / 100);
+            weights[1] += (Random.Range(-100, 101) / 100);
+            weights[2] += (Random.Range(-100, 101) / 100);
+            weights[3] += (Random.Range(-100, 101) / 100);
+            transform.position = new Vector3(0, ypos, 0);
+        }
+    }
+    void OnTriggerEnter()
+    {
+        propnum += 1;
+        propogates[propnum].w = Mathf.FloorToInt(weights[0]);
+        propogates[propnum].x = Mathf.FloorToInt(weights[1]);
+        propogates[propnum].y = Mathf.FloorToInt(weights[2]);
+        propogates[propnum].z = Mathf.FloorToInt(weights[3]);
+        distonz = transform.position.z;
+        if(distonz < (cube2.GetComponent<neuralnetwork>().distonz))
+        {
+            cube2.GetComponent<neuralnetwork>().weights = weights;
+            transform.position = new Vector3(0, ypos, 0);
+            cube2.transform.position = new Vector3(0, cube2.GetComponent<neuralnetwork>().ypos, 0);
+            weights[0] += (Random.Range(-100, 101) / 100);
+            weights[1] += (Random.Range(-100, 101) / 100);
+            weights[2] += (Random.Range(-100, 101) / 100);
+            weights[3] += (Random.Range(-100, 101) / 100);
+        }
+        else if(distonz == cube2.GetComponent<neuralnetwork>().distonz)
+        {
+            transform.position = new Vector3(0, ypos, 0);
+            weights[0] += (Random.Range(-100, 101) / 100);
+            weights[1] += (Random.Range(-100, 101) / 100);
+            weights[2] += (Random.Range(-100, 101) / 100);
+            weights[3] += (Random.Range(-100, 101) / 100);
+            
+        }
+        else if(distonz > cube2.GetComponent<neuralnetwork>().distonz)
+        {
+            weights[0] += (Random.Range(-100, 101) / 100);
+            weights[1] += (Random.Range(-100, 101) / 100);
+            weights[2] += (Random.Range(-100, 101) / 100);
+            weights[3] += (Random.Range(-100, 101) / 100);
+            transform.position = new Vector3(0, ypos, 0);
+        }
+        weights[0] += (Random.Range(-100, 101) / 100);
+        weights[1] += (Random.Range(-100, 101) / 100);
+        weights[2] += (Random.Range(-100, 101) / 100);
+        weights[3] += (Random.Range(-100, 101) / 100);
+    }
+}
